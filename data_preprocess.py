@@ -29,7 +29,7 @@ def save_spectrogram_tisv():
         print("%dth speaker processing..."%i)
         utterances_spec = []
         for utter_name in os.listdir(folder):
-            if utter_name[-4:] == '.WAV':
+            if utter_name[-4:] == '.wav':
                 utter_path = os.path.join(folder, utter_name)         # path of each utterance
                 utter, sr = librosa.core.load(utter_path, hp.data.sr)        # load utterance audio
                 intervals = librosa.effects.split(utter, top_db=30)         # voice activity detection
@@ -41,6 +41,7 @@ def save_spectrogram_tisv():
                         S = np.abs(S) ** 2
                         mel_basis = librosa.filters.mel(sr=hp.data.sr, n_fft=hp.data.nfft, n_mels=hp.data.nmels)
                         S = np.log10(np.dot(mel_basis, S) + 1e-6)           # log mel spectrogram of utterances
+                        #MARK 取180帧？
                         utterances_spec.append(S[:, :hp.data.tisv_frame])    # first 180 frames of partial utterance
                         utterances_spec.append(S[:, -hp.data.tisv_frame:])   # last 180 frames of partial utterance
 
