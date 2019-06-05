@@ -1,6 +1,6 @@
 training: !!bool "false"
 device: "cuda"
-unprocessed_data: 'data/vctk/wav48/*/*.wav'
+unprocessed_data: 'data/vctk/wav16/*/*.wav'
 ---
 data:
     train_path: './train_tisv'
@@ -12,7 +12,7 @@ data:
     nfft: 512 #For mel spectrogram preprocess
     window: 0.025 #(s)
     hop: 0.01 #(s)
-    nmels: 40 #Number of mel energies
+    nmels: 128 #Number of mel energies
     tisv_frame: 180 #Max number of time steps in input after preprocess
 ---   
 model:

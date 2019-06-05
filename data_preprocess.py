@@ -6,9 +6,21 @@ import os
 import librosa
 import numpy as np
 from hparam import hparam as hp
+import pyworld
 
 # downloaded dataset path
 audio_path = glob.glob(os.path.dirname(hp.unprocessed_data))                                        
+
+
+def extract_MCC(wav, fs, frame_period=5.0, coded_dim=128):
+    wav = wav.astype(np.float64)
+    f0_, timeaxis = pyworld.harvest(wav, fs, frame_period=frame_period)
+    f0 = pyworld.stonemask(wav, f0_, timeaxis, fs) #F0 refine
+
+    sp = pyworld.cheaptrick(wav, f0, timeaxis, fs)
+    coded_sp = pyworld.code_spectral_envelope(sp, fs, coded_dim)
+    
+    return coded_sp
 
 def save_spectrogram_tisv():
     """ Full preprocess of text independent utterance. The log-mel-spectrogram is saved as numpy file.
@@ -36,12 +48,16 @@ def save_spectrogram_tisv():
                 for interval in intervals:
                     if (interval[1]-interval[0]) > utter_min_len:           # If partial utterance is sufficient long,
                         utter_part = utter[interval[0]:interval[1]]         # save first and last 180 frames of spectrogram.
-                        S = librosa.core.stft(y=utter_part, n_fft=hp.data.nfft,
-                                              win_length=int(hp.data.window * sr), hop_length=int(hp.data.hop * sr))
-                        S = np.abs(S) ** 2
-                        mel_basis = librosa.filters.mel(sr=hp.data.sr, n_fft=hp.data.nfft, n_mels=hp.data.nmels)
-                        S = np.log10(np.dot(mel_basis, S) + 1e-6)           # log mel spectrogram of utterances
-                        #MARK 取180帧？
+                        
+                        S1 = extract_MCC(utter_part, sr, coded_dim=hp.data.nmels)
+                        # S = librosa.core.stft(y=utter_part, n_fft=hp.data.nfft,
+                        #                       win_length=int(hp.data.window * sr), hop_length=int(hp.data.hop * sr))
+                        # S = np.abs(S) ** 2
+                        # mel_basis = librosa.filters.mel(sr=hp.data.sr, n_fft=hp.data.nfft, n_mels=hp.data.nmels)
+                        # S = np.log10(np.dot(mel_basis, S) + 1e-6)           # log mel spectrogram of utterances
+                        
+                        S = S1.T
+                        #MARK 取180帧？ 1句话提取360帧特征，最开始180帧，最后180帧
                         utterances_spec.append(S[:, :hp.data.tisv_frame])    # first 180 frames of partial utterance
                         utterances_spec.append(S[:, -hp.data.tisv_frame:])   # last 180 frames of partial utterance
 
