@@ -50,12 +50,6 @@ def save_spectrogram_tisv():
                         utter_part = utter[interval[0]:interval[1]]         # save first and last 180 frames of spectrogram.
                         
                         S1 = extract_MCC(utter_part, sr, coded_dim=hp.data.nmels)
-                        # S = librosa.core.stft(y=utter_part, n_fft=hp.data.nfft,
-                        #                       win_length=int(hp.data.window * sr), hop_length=int(hp.data.hop * sr))
-                        # S = np.abs(S) ** 2
-                        # mel_basis = librosa.filters.mel(sr=hp.data.sr, n_fft=hp.data.nfft, n_mels=hp.data.nmels)
-                        # S = np.log10(np.dot(mel_basis, S) + 1e-6)           # log mel spectrogram of utterances
-                        
                         S = S1.T
                         #MARK 取180帧？ 1句话提取360帧特征，最开始180帧，最后180帧
                         utterances_spec.append(S[:, :hp.data.tisv_frame])    # first 180 frames of partial utterance
